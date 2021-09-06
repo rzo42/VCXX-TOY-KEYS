@@ -48,13 +48,13 @@ KEYBOARD LAYOUT
 	
 ATTACK/RELEASE ENVELEOPE
 	
-	the attack phase is triggered when a new key is pressed while the note is off or during the release phase. 
+the attack phase is triggered when a new key is pressed while the note is off or during the release phase. 
   the attack phase begins at the current volume level (0 if the note is off) and increases the volume by 
   one every (atk/vol) ticks  of the jiffy clock until the volume=gain(vol) 
   
-  once volume=gain the note will hold until released. 
+once volume=gain the note will hold until released. 
   a new key will trigger a new note but will not retrigger the attack phase.
 	
-	the release phase is triggered when a key is released and no other keys are pressed. the release phase begins at the current volume 
+the release phase is triggered when a key is released and no other keys are pressed. the release phase begins at the current volume 
   and decreases the volume by 1 every (rel/vol) ticks of the jiffy clock until the volume=0
 
