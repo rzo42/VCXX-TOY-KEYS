@@ -1,0 +1,195 @@
+00001  0000             
+00002  0001             ;      " VIZNUTS WAVEFORMS "
+00003  0001             ;       BY               :      RYAN LISTON
+00004  0001             ;       ORIGINAL CODE BY :      "VIZNUT"
+00005  0001             ;       DESCRIPTION      :      PULSE WAVE FORM GENERATOR
+00006  0001             ;       TARGET           :      COMMODORE VIC-20
+00007  0001             ;----------------------------------------------------
+00008  0001             ;
+00009  0001             ;-INITALIZE A,X,Y BEFOR CALLING
+00010  0001             ;-A=WAVE FORM
+00011  0001             ;-X=INITIAL FREQUENCY
+00012  0001             ;-Y=CHANNEL
+00013  0001             
+00014  0001             ;CONTROLS
+00015  0001             START_ADDRESS = 664          ;START ADDRESS
+00016  0001             TEMP_1    = $FE           ;(TEMP STORAGE FOR THE A REGISTOR(SHIFT REGISTOR))
+00017  0001             TEMP_2    = $FF           ;(TEMP STORAGE FOR THE Y REGISTOR (CHANNEL))
+00018  0001             
+00019  0001             
+00020  0001             ;-------------------------------------------------------------------------------
+00021  0001             
+00022  0001             *         = START_ADDRESS
+00023  0298             
+00024  0298             ;-------------------------------------------------------------------------------
+00025  0298  78         VIZWAV2   SEI
+00026  0299  8E BB 02             STX   INIT_FREQ   ;3/4    ALTERS THE VALUE ON THE
+00027  029C                       ;INIT_FREQ=$87          ;       INITIAL FREQUENCY IN
+00028  029C                       ;       LINE  XXXX
+00029  029C  8C AA 02             STY   CH_0        ;3/4    ALTERS MEMORY AT CH_0
+00030  029F                       ;CH0=$0C
+00031  029F  8C B5 02             STY   CH_1        ;3/4    AN CH_1 TO SET VOICE CHANNEL
+00032  02A2                       ;CH1=$0C
+00033  02A2  BE BA 02             LDX   FQ_MASK-$A,Y;3/4    LOADS FREQUENCY MASK FOR VOICE
+00034  02A5                       ;X=$FB(%11111011)
+00035  02A5  85 FE                STA   TEMP_1      ;2/3    STORES THE SHIFT REGISTER IN
+00036  02A7                       ;TEMP_1=$FB(%11111011)  ;       TEMP_1
+00037  02A7  09 7F                ORA   #$7F        ;2/2    ORS A WITH #$7F(%01111111)
+00038  02A9                       ;%11111011 OR %01111111 = %11111111($FF)
+00039  02A9                       ;A=%11111111($FF)
+00040  02A9  8F 0C 90             AXS   $900C       ;3/4     ANDS A WITH BIT MASK STORES AT $900C
+00041  02AC             CH_0      = *-2             ;%11111111 AND %11111011 = %11111011
+00042  02AC                       ;$900C=%11111011($FB)
+00043  02AC  84 FF                STY   TEMP_2      ;2/3    STORES Y(CHANNEL) AT TEMP_2
+00044  02AE                       ;TEMP_2=$0C
+00045  02AE  A0 07                LDY   #$07        ;2/2    LOADS Y WITH 7
+00046  02B0                       ;Y = 7
+00047  02B0  A9 7F      IO        LDA   #$7F        ;2/2    LOADS A WITH $7F
+00048  02B2                       ;A=$7F
+00049  02B2  07 FE                ASO   TEMP_1      ;2/5    A=(TEMP_1<<1)OR $7F
+00050  02B4                       ;PASS 1: (Y=7)  (%11111011<<1) = %11110110
+00051  02B4                       ;%11110110 OR %01111111 = %11111111($FF)
+00052  02B4                       ;A = %11111111($FF)
+00053  02B4                       ;PASS 2; (Y=6)  (%11110110<<1) = %11101100
+00054  02B4                       ;%11101100 OR %01111111 = %11111111($FF)
+00055  02B4                       ;A = %11111111($FF)
+00056  02B4                       ;PASS 3; (Y=5)  (%11101100<<1) = %11011000
+00057  02B4                       ;%11011000 OR %01111111 = %11111111($FF)
+00058  02B4                       ;A = %11111111($FF)
+00059  02B4                       ;PASS 4; (Y=4)  (%11011000<<1) = %10110000
+00060  02B4                       ;%10110000 OR %01111111 = %11111111($FF)
+00061  02B4                       ;A = %11111111($FF)
+00062  02B4                       ;PASS 5; (Y=3)  (%10110000<<1) = %01100000
+00063  02B4                       ;%01100000 OR %01111111 = %01111111($FF)
+00064  02B4                       ;A = %01111111($7F)
+00065  02B4                       ;PASS 6; (Y=2)  (%01100000<<1) = %11000000
+00066  02B4                       ;%11000000 OR %01111111 = %11111111($FF)
+00067  02B4                       ;A = %01111111($FF)
+00068  02B4                       ;PASS 7; (Y=1)  (%11000000<<1) = %10000000
+00069  02B4                       ;%10000000 OR %01111111 = %11111111($FF)
+00070  02B4                       ;A = %11111111($FF)
+00071  02B4  8F 0C 90             AXS   $900C       ;3/4    ANDS A WITH BIT MASK STORES AT $900C
+00072  02B7             CH_1      = *-2
+00073  02B7                       ;PASS 1: (Y=7)  %11111111 AND %11111011 = %11111011
+00074  02B7                       ;$900C=%11111011($FB)
+00075  02B7                       ;PASS 2: (Y=6)  %11111111 AND %11111011 = %11111011
+00076  02B7                       ;$900C=%11111011($FB)
+00077  02B7                       ;PASS 3: (Y=5)  %11111111 AND %11111011 = %11111011
+00078  02B7                       ;$900C=%11111011($FB)
+00079  02B7                       ;PASS 4: (Y=4)  %11111111 AND %11111011 = %11111011
+00080  02B7                       ;$900C=%11111011($FB)
+00081  02B7                       ;PASS 5: (Y=3)  %01111111 AND %11111H11 = %01111011
+00082  02B7                       ;$900C=%01111011($FB)
+00083  02B7                       ;PASS 6: (Y=2)  %11111111 AND %11111011 = %11111011
+00084  02B7                       ;$900C=%11111011($FB)
+00085  02B7                       ;PASS 7: (Y=1)  %11111111 AND %11111011 = %11111011
+00086  02B7                       ;$900C=%11111011($FB)
+00087  02B7  88                   DEY               ;1/2    Y=Y-1
+00088  02B8                       ;PASS 1:(Y=7)   Y=6
+00089  02B8                       ;PASS 2:(Y=6)   Y=5
+00090  02B8                       ;PASS 3:(Y=5)   Y=4
+00091  02B8                       ;PASS 4:(Y=4)   Y=3
+00092  02B8                       ;PASS 5:(Y=3)   Y=2
+00093  02B8                       ;PASS 6:(Y=2)   Y=1
+00094  02B8                       ;PASS 7:(Y=1)   Y=0
+00095  02B8  D0 F6                BNE   IO          ;2/3    IF NOT Y=0 THEN BRANCH TO I0
+00096  02BA                       ;       ELSE CONTINUE
+00097  02BA                       ;PASS 1;(Y=6)   BRANCH TO IO
+00098  02BA                       ;PASS 2;(Y=5)   BRANCH TO IO
+00099  02BA                       ;PASS 3;(Y=4)   BRANCH TO IO
+00100  02BA                       ;PASS 4;(Y=3)   BRANCH TO IO
+00101  02BA                       ;PASS 5;(Y=2)   BRANCH TO IO
+00102  02BA                       ;PASS 6;(Y=1)   BRANCH TO IO
+00103  02BA                       ;PASS 7;(Y=0)   CONTINUE
+00104  02BA  A9 80                LDA   #128        ;2/2    LOADS A WITH THE INITIAL FREQUENCY
+00105  02BC                       ;A=$87
+00106  02BC             INIT_FREQ = *-1
+00107  02BC  EA                   NOP               ;1/2    BURNS 2 CYCLES
+00108  02BD                       ; NO OPPERATION
+00109  02BD  A4 FF                LDY   TEMP_2      ;2/3    LOADS Y WITH CHANNEL INDEX STORED
+00110  02BF                       ;Y=$0C                          AT TEMP_2
+00111  02BF  99 00 90   NO_SET    STA   $9000,Y     ;3/5    STORES INITIAL FREAQUENCY TO $9000+Y
+00112  02C2  58                   CLI                  ;$900C=$87
+00113  02C3  60                   RTS               ; EXIT ROUTINE
+00114  02C4             FQ_MASK   = *
+00115  02C4  FD         V_0A      BYTE  $FD     ;LOW VOICE BIT MASK %11111101
+00116  02C5  FE         V_0B      BYTE  $FE     ;MID VOICE BIT MASK %11111110
+00117  02C6  FB         V_0C      BYTE  $FB     ;HI VOICE BIT MASK %11111011
+00118  02C7                       
+00119  02C7             
+00120  02C7             
+00121  02C7             
+00122  02C7  07         GAN       BYTE  7
+00123  02C8  0B         WAV       BYTE  11
+00124  02C9  06         OCT       BYTE  6
+00125  02CA  0E         ATT       BYTE  14
+00126  02CB  38         REL       BYTE  56
+00127  02CC                       
+00128  02CC  00         MASK1     BYTE  0
+00129  02CD  00         MASK2     BYTE  0
+00130  02CE  00         MASK3     BYTE  0
+00131  02CF  00         MASK4     BYTE  0
+00132  02D0             
+00133  02D0  00         ATT_G     BYTE  0
+00134  02D1  00         REL_G     BYTE  0
+00135  02D2  00         BUFFER_A  BYTE  0
+00136  02D3  00         BUFFER_X  BYTE  0
+00137  02D4             
+00138  02D4                       
+00139  02D4             
+
+******* 19 Label(s) *******
+att = $02CA 
+att_g = $02D0 
+buffer_a = $02D2 
+buffer_x = $02D3 
+gan = $02C7 
+io = $02B0 
+mask1 = $02CC 
+mask2 = $02CD 
+mask3 = $02CE 
+mask4 = $02CF 
+no_set = $02BF 
+oct = $02C9 
+rel = $02CB 
+rel_g = $02D1 
+v_0a = $02C4 
+v_0b = $02C5 
+v_0c = $02C6 
+vizwav2 = $0298 
+wav = $02C8 
+
+******* 18 Unused label(s) *******
+att
+att_g
+buffer_a
+buffer_x
+gan
+mask1
+mask2
+mask3
+mask4
+no_set
+oct
+rel
+rel_g
+v_0a
+v_0b
+v_0c
+vizwav2
+wav
+
+******* 8 Variable(s) *******
+ch_0  = $02AA
+ch_1  = $02B5
+fq_mask  = $02C4
+init_freq  = $02BB
+start_address  = $0298
+temp_1  = $00FE
+temp_2  = $00FF
+tgt_vic20  = $0001
+******* 3 Unused variables(s) *******
+fq_mask
+start_address
+tgt_vic20
+

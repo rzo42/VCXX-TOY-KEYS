@@ -1,0 +1,66 @@
+00001  0000             *=664
+00002  0298             
+00003  0298             SETLFS$=$FFBA 
+00004  0298             SETNAM$=$$FFBD 
+00005  0298             LOAD$=$FFD5
+00006  0298             SAVE$=$FFD8
+00007  0298             
+00008  0298             
+00009  0298  A9 00      START     LDA   #$00
+00010  029A  85 FB                STA   $FB
+00011  029C  A9 10                LDA   #$10
+00012  029E  85 FC                STA   $FC
+00013  02A0  A9 FB                LDA   #$FB
+00014  02A2  A2 FF                LDX   #$FF
+00015  02A4  A0 10                LDY   #$10
+00016  02A6  20 D8 FF             JSR   SAVE$
+00017  02A9             
+00018  02A9  A9 01                LDA   #1
+00019  02AB  A2 08                LDX   #8
+00020  02AD  A8                   TAY
+00021  02AE  20 BA FF             JSR   SETLFS$
+00022  02B1  A9 02                LDA   #2
+00023  02B3  A2 E1                LDX   #<FILE_
+00024  02B5  A0 02                LDY   #>FILE_
+00025  02B7  20 BD FF             JSR   SETNAM$
+00026  02BA  A9 00                LDA   #0
+00027  02BC  20 D5 FF             JSR   LOAD$
+00028  02BF                       
+00029  02BF  A9 01                LDA   #1
+00030  02C1  AA                   TAX
+00031  02C2  A8                   TAY
+00032  02C3  20 BA FF             JSR   SETLFS$
+00033  02C6  A9 02                LDA   #2
+00034  02C8  A2 E1                LDX   #<FILE_
+00035  02CA  A0 02                LDY   #>FILE_
+00036  02CC  20 BD FF             JSR   SETNAM$
+00037  02CF  A9 00                LDA   #$00
+00038  02D1  85 FB                STA   $FB
+00039  02D3  A9 12                LDA   #$12
+00040  02D5  85 FC                STA   $FC
+00041  02D7  A9 FB                LDA   #$FB
+00042  02D9  A2 FF                LDX   #$FF
+00043  02DB  A0 15                LDY   #$15
+00044  02DD  20 D8 FF             JSR   SAVE$
+00045  02E0  60                   RTS
+00046  02E1             ;JMP   $1200
+00047  02E1  54 4B      FILE_     BYTE  "TK"
+00048  02E3                       
+00049  02E3             
+
+******* 2 Label(s) *******
+file_ = $02E1 
+start = $0298 
+
+******* 1 Unused label(s) *******
+start
+
+******* 5 Variable(s) *******
+load$  = $FFD5
+save$  = $FFD8
+setlfs$  = $FFBA
+setnam$  = $FFBD
+tgt_vic20  = $0001
+******* 1 Unused variables(s) *******
+tgt_vic20
+
