@@ -1,4 +1,4 @@
-# VCXX-TOY-KEYS
+# VCXX-TOY-KEYS V.1.5.0
 A simple playable keyboard for the Commodore Vic-20
 
 download:[TOY KEYS.zip](https://github.com/rzo42/VCXX-TOY-KEYS/files/7140906/TOY.KEYS.zip)
