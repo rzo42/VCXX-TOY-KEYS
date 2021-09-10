@@ -1,0 +1,650 @@
+00001  0000             *=$1200
+00002  1200             
+00003  1200             ;KEY ADDRESSES
+00004  1200             INDEX_1$  = $22
+00005  1200             INDEX_2$  = $24
+00006  1200             FAC$      = $61
+00007  1200             AFAC$     = $69
+00008  1200             NOT_POINT = $FC
+00009  1200             OSC_1$    = 36874
+00010  1200             OSC_2$    = 36875
+00011  1200             OSC_3$    = 36876
+00012  1200             OSC_4$    = 36877
+00013  1200             VOL$      = 36878
+00014  1200             BG_COLOR$ = 36879
+00015  1200             K_IN$     = 197
+00016  1200             VERTICAL$ = $9001
+00017  1200             HORIZONTAL$= $9000     ;BIT 6-0
+00018  1200             COLUMN$   = $9002     ;BIT 6-0 DEFAULT 22
+00019  1200             ROW$      = $9003     ;BIT  6-1   BIT 0=0   BIT 7=RASTER
+00020  1200                       
+00021  1200             ;KERNAL CALLS
+00022  1200             CHROUT$   = $FFD2
+00023  1200             CLOSE$    = $FFC3
+00024  1200             GETIN$    = $FFE4
+00025  1200             LOAD$     = $FFD5
+00026  1200             OPEN$     = $FFC0
+00027  1200             PLOT$     = $FFF0
+00028  1200             SAVE$     = $FFD8
+00029  1200             SCNKEY$   = $FF9F
+00030  1200             SETIM$    = $FFDB
+00031  1200             RDTIM$    = $FFDE
+00032  1200                       
+00033  1200                       
+00034  1200             ;ROM CALLS
+00035  1200             PR_STR$   = $CB1E ;AY
+00036  1200             PR_INT$   = $DDCD ;AX
+00037  1200             PR_FAC$   = $DDD7
+00038  1200             DEVIDE$   = $DB12 ;FAC=AFAC/FAC
+00039  1200             LDF_Y$    = $D3A2 ;FAC(FLOAT)=Y(INTEGER(0 TO 255))
+00040  1200             LDAF_F$   = $DC04 ;AFAC=FAC
+00041  1200             LDAY_F$   = $D1AA            ; A/Y(INTGER)=FAC
+00042  1200             LDF_AY$   = $D391 ;FAC=A/Y
+00043  1200             ;CONSTANTS
+00044  1200             VERT$     = 16
+00045  1200             BG$       = 14
+00046  1200             COL$      = 19
+00047  1200             RW$       = 11*2
+00048  1200             DOWN$     = 17
+00049  1200             RIGHT$    = 29
+00050  1200             UP$       = 145
+00051  1200             LEFT$     = 157
+00052  1200             K_PRESS$  = 107
+00053  1200             KB_SIZE$  = 649
+00054  1200             KB_CLEAR$ = 198
+00055  1200             K_RPT$    = 650
+00056  1200             MASK_OFF=%01111111 
+00057  1200             MASK_ON=%11111111 
+00058  1200  A9 01      START     LDA   #1
+00059  1202  8D 89 02             STA   KB_SIZE$
+00060  1205  A9 0E                LDA   #BG$
+00061  1207  8D 0F 90             STA   BG_COLOR$
+00062  120A  A9 80                LDA   #128
+00063  120C  8D 8A 02             STA   K_RPT$
+00064  120F  AD 03 90             LDA   ROW$
+00065  1212  29 81                AND   #129
+00066  1214  09 16                ORA   #RW$
+00067  1216  8D 03 90             STA   ROW$
+00068  1219  AD 01 90             LDA   VERTICAL$
+00069  121C  18                   CLC
+00070  121D  69 10                ADC   #VERT$
+00071  121F  8D 01 90             STA   VERTICAL$
+00072  1222  A9 41                LDA   #<SCREEN
+00073  1224  A0 14                LDY   #>SCREEN
+00074  1226  20 1E CB             JSR   PR_STR$
+00075  1229  A9 C5                LDA   #<SCREEN2
+00076  122B  A0 14                LDY   #>SCREEN2
+00077  122D  20 1E CB             JSR   PR_STR$
+00078  1230                       
+00079  1230             ;GUI
+00080  1230  A9 00      GUI       LDA   #0
+00081  1232  8D 0E 90             STA   VOL$
+00082  1235  A9 7E                LDA   #126
+00083  1237  8D 0A 90             STA   OSC_1$
+00084  123A  8D 0B 90             STA   OSC_2$
+00085  123D  8D 0C 90             STA   OSC_3$
+00086  1240  8D 0D 90             STA   OSC_4$
+00087  1243  A0 10                LDY   #16
+00088  1245  A2 09                LDX   #9
+00089  1247  18                   CLC
+00090  1248  20 F0 FF             JSR   PLOT$
+00091  124B  A9 F1                LDA   #<MOD_EDT
+00092  124D  A0 15                LDY   #>MOD_EDT
+00093  124F  20 1E CB             JSR   PR_STR$
+00094  1252  A9 00                LDA   #0
+00095  1254  85 C6                STA   KB_CLEAR$
+00096  1256  A2 00      G_LOOP    LDX   #0
+00097  1258  8E FE 15             STX   BUFFER_X
+00098  125B  20 E4 FF   G_LOOP_1  JSR   GETIN$
+00099  125E  8D FD 15             STA   BUFFER_A
+00100  1261  C9 0D                CMP   #13
+00101  1263  D0 24                BNE   G_U
+00102  1265             ;PLAYER SETUP
+00103  1265  A0 10      PLAY_SET  LDY   #16
+00104  1267  A2 09                LDX   #9
+00105  1269  18                   CLC
+00106  126A  20 F0 FF             JSR   PLOT$
+00107  126D  A9 F6                LDA   #<MOD_LOD
+00108  126F  A0 15                LDY   #>MOD_LOD
+00109  1271  20 1E CB             JSR   PR_STR$
+00110  1274                       
+00111  1274                       
+00112  1274  AD 7C 15             LDA   ATT
+00113  1277  20 EC 12             JSR   DEVI
+00114  127A  8E FB 15             STX   ATT_G
+00115  127D  AD 7D 15             LDA   REL
+00116  1280  20 EC 12             JSR   DEVI
+00117  1283  8E FC 15             STX   REL_G
+00118  1286  4C 04 13             JMP   PL_START
+00119  1289             ;GUI INPUT
+00120  1289  AE FE 15   G_U       LDX   BUFFER_X
+00121  128C  AD FD 15             LDA   BUFFER_A
+00122  128F  C9 00                CMP   #0
+00123  1291  F0 C8                BEQ   G_LOOP_1
+00124  1293  DD 8C 15             CMP   KEY_1,X
+00125  1296  D0 1B                BNE   G_D
+00126  1298  BD 79 15             LDA   GAN,X
+00127  129B  DD 96 15             CMP   MAX,X
+00128  129E  F0 23                BEQ   G_COUNT
+00129  12A0  FE 79 15             INC   GAN,X
+00130  12A3  BD 79 15   G_JUMP    LDA   GAN,X
+00131  12A6  8D FD 15             STA   BUFFER_A
+00132  12A9  BC 82 15             LDY   Y_,X
+00133  12AC  BD 87 15             LDA   X_,X
+00134  12AF  AA                   TAX
+00135  12B0  4C D1 12             JMP   P_VAL
+00136  12B3  DD 91 15   G_D       CMP   KEY_2,X
+00137  12B6  D0 0B                BNE   G_COUNT
+00138  12B8  BD 79 15             LDA   GAN,X
+00139  12BB  F0 06                BEQ   G_COUNT
+00140  12BD  DE 79 15             DEC   GAN,X
+00141  12C0  4C A3 12             JMP   G_JUMP
+00142  12C3  AE FE 15   G_COUNT   LDX   BUFFER_X
+00143  12C6  E0 04                CPX   #4
+00144  12C8  F0 8C                BEQ   G_LOOP
+00145  12CA  E8                   INX
+00146  12CB  8E FE 15             STX   BUFFER_X
+00147  12CE  4C 5B 12             JMP   G_LOOP_1
+00148  12D1             
+00149  12D1                       
+00150  12D1             
+00151  12D1             ;VALUE BYTE  ER
+00152  12D1  18         P_VAL     CLC
+00153  12D2  20 F0 FF             JSR   PLOT$
+00154  12D5  AD FD 15             LDA   BUFFER_A
+00155  12D8  C9 0A                CMP   #10
+00156  12DA  B0 05                BCS   P_VAL_1
+00157  12DC  A9 30                LDA   #48
+00158  12DE  20 D2 FF             JSR   CHROUT$
+00159  12E1  AE FD 15   P_VAL_1   LDX   BUFFER_A
+00160  12E4  A9 00                LDA   #0
+00161  12E6  20 CD DD             JSR   PR_INT$
+00162  12E9  4C 5B 12   P_VAL_2   JMP   G_LOOP_1
+00163  12EC             
+00164  12EC                       
+00165  12EC             
+00166  12EC  A2 00      DEVI      LDX   #0          ;A=ATT/REL
+00167  12EE  EC 79 15             CPX   GAN
+00168  12F1  F0 05                BEQ   EXIT_DEV
+00169  12F3  CD 79 15   LOOP_DEV  CMP   GAN
+00170  12F6  B0 01                BCS   LOOP_DEV2
+00171  12F8  60         EXIT_DEV  RTS
+00172  12F9  38         LOOP_DEV2 SEC
+00173  12FA  ED 79 15             SBC   GAN
+00174  12FD  E8                   INX
+00175  12FE  4C F3 12             JMP   LOOP_DEV
+00176  1301             
+00177  1301             
+00178  1301  4C 30 12   RTRN_EDIT JMP   GUI
+00179  1304  A9 00      PL_START  LDA   #0
+00180  1306  20 DB FF             JSR   SETIM$
+00181  1309  20 DE FF   PLLOOP    JSR   RDTIM$
+00182  130C  C9 63                CMP   #99
+00183  130E  D0 F9                BNE   PLLOOP
+00184  1310                       
+00185  1310                       
+00186  1310  A2 00                LDX   #0
+00187  1312  AD 7B 15             LDA   OCT
+00188  1315                       
+00189  1315  4A         V1        LSR
+00190  1316  90 05                BCC   V2
+00191  1318  A0 FF                LDY   #MASK_ON
+00192  131A  4C 1F 13             JMP   V3
+00193  131D  A0 7F      V2        LDY   #MASK_OFF
+00194  131F  48         V3        PHA
+00195  1320  98                   TYA
+00196  1321  9D 7E 15             STA   MASK1,X
+00197  1324  68                   PLA
+00198  1325  E8                   INX
+00199  1326  E0 04                CPX   #4
+00200  1328  D0 EB                BNE   V1
+00201  132A                       
+00202  132A                       
+00203  132A  A0 0C                LDY   #$0C
+00204  132C  AE 7A 15             LDX   WAV
+00205  132F  BD 9B 15             LDA   W_TABLE,X
+00206  1332  8D FD 15             STA   BUFFER_A
+00207  1335  8C FE 15   V4        STY   BUFFER_X
+00208  1338  B9 74 15             LDA   MASK1-$0A,Y
+00209  133B  29 80                AND   #128
+00210  133D  AA                   TAX
+00211  133E  AD FD 15             LDA   BUFFER_A
+00212  1341                       
+00213  1341  20 12 14             JSR   VIZWAV
+00214  1344  AC FE 15             LDY   BUFFER_X
+00215  1347  88                   DEY
+00216  1348  C0 09                CPY   #9
+00217  134A  D0 E9                BNE   V4
+00218  134C             
+00219  134C  A0 10                LDY   #16
+00220  134E  A2 09                LDX   #9
+00221  1350  18                   CLC
+00222  1351  20 F0 FF             JSR   PLOT$
+00223  1354  A9 EC                LDA   #<MOD_PLY
+00224  1356  A0 15                LDY   #>MOD_PLY
+00225  1358  20 1E CB             JSR   PR_STR$
+00226  135B                       
+00227  135B             
+00228  135B                       
+00229  135B             
+00230  135B  A4 C5      ATTACK_0  LDY   K_IN$             ;GET KEY INPUT @ 203
+00231  135D  B9 AB 15             LDA   TRU_INT,Y     ;GET KEY NOTE NOTE UE
+00232  1360  8D FD 15             STA   BUFFER_A          ;STORE NOTE VALUE IN BUFFER_A
+00233  1363  C9 00                CMP   #0                ;IF NOTE VALUE = 0...
+00234  1365  F0 F4                BEQ   ATTACK_0          ;...THEN LOOP
+00235  1367  C9 01      ATTACK_1  CMP   #1                ;IF NOTE VALUE != 1...
+00236  1369  D0 03                BNE   ATTACK_2          ;...THEN LOOP
+00237  136B  4C 30 12             JMP   GUI               ;ELSE EXIT TO EDITOR
+00238  136E  A9 00      ATTACK_2  LDA   #0                ;SET JIFFY LOW COUNTER TO 0
+00239  1370  20 DB FF             JSR   SETIM$            ;SET JIFFY
+00240  1373  AD FD 15   ATTACK_3  LDA   BUFFER_A          ;A=NOTE VALUE
+00241  1376  AE 7E 15             LDX   MASK1
+00242  1379  8F 0A 90             AXS   OSC_1$
+00243  137C  AE 7F 15             LDX   MASK2
+00244  137F  8F 0B 90             AXS   OSC_2$
+00245  1382  AE 80 15             LDX   MASK3
+00246  1385  8F 0C 90             AXS   OSC_3$
+00247  1388  AE 81 15             LDX   MASK4
+00248  138B  8F 0D 90             AXS   OSC_4$
+00249  138E                       
+00250  138E                       
+00251  138E  20 DE FF             JSR   RDTIM$            ;READ THE JIFFY CLOCK
+00252  1391  CD FB 15             CMP   ATT_G             ;IF JIFFY >= ATTACK/GAIN...
+00253  1394  90 10                BCC   ATTACK_5          ;THEN ATTACK_5
+00254  1396  AD 79 15             LDA   GAN              ;ELSE LOAD CURRENT VOLUME
+00255  1399  CD 0E 90             CMP   VOL$               ;IF VOL >= GAIN...
+00256  139C  F0 1E                BEQ   RELEASE_0         ;THEN JUMP TO RELEAS
+00257  139E  EE 0E 90             INC   VOL$
+00258  13A1  A9 00                LDA   #0
+00259  13A3  20 DB FF             JSR   SETIM$
+00260  13A6                       
+00261  13A6                       
+00262  13A6  A4 C5      ATTACK_5  LDY   K_IN$
+00263  13A8  B9 AB 15             LDA   TRU_INT,Y
+00264  13AB  C9 00                CMP   #0
+00265  13AD  D0 03                BNE   ATTACK_6
+00266  13AF  4C E7 13             JMP   RELEASE_3
+00267  13B2  C9 01      ATTACK_6  CMP   #1
+00268  13B4  D0 03                BNE   ATTACK_7
+00269  13B6  4C 30 12             JMP   GUI
+00270  13B9  4C 73 13   ATTACK_7  JMP   ATTACK_3
+00271  13BC             
+00272  13BC  A4 C5      RELEASE_0 LDY   K_IN$
+00273  13BE  B9 AB 15             LDA   TRU_INT,Y
+00274  13C1  C9 00                CMP   #0
+00275  13C3  F0 22                BEQ   RELEASE_3
+00276  13C5  C9 01      RELEASE_1 CMP   #1
+00277  13C7  D0 03                BNE   RELEASE_2
+00278  13C9  4C 30 12             JMP   GUI
+00279  13CC  AE 7E 15   RELEASE_2 LDX   MASK1
+00280  13CF  8F 0A 90             AXS   OSC_1$
+00281  13D2  AE 7F 15             LDX   MASK2
+00282  13D5  8F 0B 90             AXS   OSC_2$
+00283  13D8  AE 80 15             LDX   MASK3
+00284  13DB  8F 0C 90             AXS   OSC_3$
+00285  13DE  AE 81 15             LDX   MASK4
+00286  13E1  8F 0D 90             AXS   OSC_4$
+00287  13E4  4C BC 13             JMP   RELEASE_0
+00288  13E7  A9 00      RELEASE_3 LDA   #0
+00289  13E9  20 DB FF             JSR   SETIM$
+00290  13EC  20 DE FF   RELEASE_4 JSR   RDTIM$
+00291  13EF  CD FC 15             CMP   REL_G
+00292  13F2  90 12                BCC   RELEASE_5
+00293  13F4  AD 0E 90             LDA   VOL$
+00294  13F7  C9 00                CMP   #0
+00295  13F9  D0 03                BNE   RELEASE_4_B
+00296  13FB  4C 5B 13             JMP   ATTACK_0
+00297  13FE  CE 0E 90   RELEASE_4_BDEC   VOL$
+00298  1401  A9 00                LDA   #0
+00299  1403  20 DB FF             JSR   SETIM$
+00300  1406  A4 C5      RELEASE_5 LDY   K_IN$
+00301  1408  B9 AB 15             LDA   TRU_INT,Y
+00302  140B  C9 00                CMP   #0
+00303  140D  F0 DD                BEQ   RELEASE_4
+00304  140F  4C 5B 13             JMP   ATTACK_0
+00305  1412             
+00306  1412             
+00307  1412             
+00308  1412                       
+00309  1412             
+00310  1412                       
+00311  1412             ;      " VIZNUTS WAVEFORMS "
+00312  1412             ;       BY               :      RYAN LISTON
+00313  1412             ;       ORIGINAL CODE BY :      "VIZNUT"
+00314  1412             ;       DESCRIPTION      :      PULSE WAVE FORM GENERATOR
+00315  1412             ;       TARGET           :      COMMODORE VIC-20
+00316  1412             ;----------------------------------------------------
+00317  1412             ;
+00318  1412             ;-INITALIZE A,X,Y BEFOR CALLING
+00319  1412             ;-A=WAVE FORM
+00320  1412             ;-X=INITIAL FREQUENCY
+00321  1412             ;-Y=CHANNEL
+00322  1412             
+00323  1412             ;CONTROLS
+00324  1412             START_ADDRESS = $A400          ;START ADDRESS
+00325  1412             TEMP_1    = $FE           ;(TEMP STORAGE FOR THE A REGISTOR(SHIFT REGISTOR))
+00326  1412             TEMP_2    = $FF           ;(TEMP STORAGE FOR THE Y REGISTOR (CHANNEL))
+00327  1412             
+00328  1412             
+00329  1412             ;-------------------------------------------------------------------------------
+00330  1412             
+00331  1412             ;*           = START_ADDRESS
+00332  1412             
+00333  1412             ;-------------------------------------------------------------------------------
+00334  1412  78         VIZWAV    SEI
+00335  1413  8E 35 14             STX   INIT_FREQ   ;3/4    ALTERS THE VALUE ON THE
+00336  1416                       ;INIT_FREQ=$87          ;       INITIAL FREQUENCY IN
+00337  1416                       ;       LINE  XXXX
+00338  1416  8C 24 14             STY   CH_0        ;3/4    ALTERS MEMORY AT CH_0
+00339  1419                       ;CH0=$0C
+00340  1419  8C 2F 14             STY   CH_1        ;3/4    AN CH_1 TO SET VOICE CHANNEL
+00341  141C                       ;CH1=$0C
+00342  141C  BE 34 14             LDX   FQ_MASK-$A,Y;3/4    LOADS FREQUENCY MASK FOR VOICE
+00343  141F                       ;X=$FB(%11111011)
+00344  141F  85 FE                STA   TEMP_1      ;2/3    STORES THE SHIFT REGISTER IN
+00345  1421                       ;TEMP_1=$FB(%11111011)  ;       TEMP_1
+00346  1421  09 7F                ORA   #$7F        ;2/2    ORS A WITH #$7F(%01111111)
+00347  1423                       ;%11111011 OR %01111111 = %11111111($FF)
+00348  1423                       ;A=%11111111($FF)
+00349  1423  8F 0C 90             AXS   $900C       ;3/4     ANDS A WITH BIT MASK STORES AT $900C
+00350  1426             CH_0      = *-2             ;%11111111 AND %11111011 = %11111011
+00351  1426                       ;$900C=%11111011($FB)
+00352  1426  84 FF                STY   TEMP_2      ;2/3    STORES Y(CHANNEL) AT TEMP_2
+00353  1428                       ;TEMP_2=$0C
+00354  1428  A0 07                LDY   #$07        ;2/2    LOADS Y WITH 7
+00355  142A                       ;Y = 7
+00356  142A  A9 7F      IO        LDA   #$7F        ;2/2    LOADS A WITH $7F
+00357  142C                       ;A=$7F
+00358  142C  07 FE                ASO   TEMP_1      ;2/5    A=(TEMP_1<<1)OR $7F
+00359  142E                       ;PASS 1: (Y=7)  (%11111011<<1) = %11110110
+00360  142E                       ;%11110110 OR %01111111 = %11111111($FF)
+00361  142E                       ;A = %11111111($FF)
+00362  142E                       ;PASS 2; (Y=6)  (%11110110<<1) = %11101100
+00363  142E                       ;%11101100 OR %01111111 = %11111111($FF)
+00364  142E                       ;A = %11111111($FF)
+00365  142E                       ;PASS 3; (Y=5)  (%11101100<<1) = %11011000
+00366  142E                       ;%11011000 OR %01111111 = %11111111($FF)
+00367  142E                       ;A = %11111111($FF)
+00368  142E                       ;PASS 4; (Y=4)  (%11011000<<1) = %10110000
+00369  142E                       ;%10110000 OR %01111111 = %11111111($FF)
+00370  142E                       ;A = %11111111($FF)
+00371  142E                       ;PASS 5; (Y=3)  (%10110000<<1) = %01100000
+00372  142E                       ;%01100000 OR %01111111 = %01111111($FF)
+00373  142E                       ;A = %01111111($7F)
+00374  142E                       ;PASS 6; (Y=2)  (%01100000<<1) = %11000000
+00375  142E                       ;%11000000 OR %01111111 = %11111111($FF)
+00376  142E                       ;A = %01111111($FF)
+00377  142E                       ;PASS 7; (Y=1)  (%11000000<<1) = %10000000
+00378  142E                       ;%10000000 OR %01111111 = %11111111($FF)
+00379  142E                       ;A = %11111111($FF)
+00380  142E  8F 0C 90             AXS   $900C       ;3/4    ANDS A WITH BIT MASK STORES AT $900C
+00381  1431             CH_1      = *-2
+00382  1431                       ;PASS 1: (Y=7)  %11111111 AND %11111011 = %11111011
+00383  1431                       ;$900C=%11111011($FB)
+00384  1431                       ;PASS 2: (Y=6)  %11111111 AND %11111011 = %11111011
+00385  1431                       ;$900C=%11111011($FB)
+00386  1431                       ;PASS 3: (Y=5)  %11111111 AND %11111011 = %11111011
+00387  1431                       ;$900C=%11111011($FB)
+00388  1431                       ;PASS 4: (Y=4)  %11111111 AND %11111011 = %11111011
+00389  1431                       ;$900C=%11111011($FB)
+00390  1431                       ;PASS 5: (Y=3)  %01111111 AND %11111H11 = %01111011
+00391  1431                       ;$900C=%01111011($FB)
+00392  1431                       ;PASS 6: (Y=2)  %11111111 AND %11111011 = %11111011
+00393  1431                       ;$900C=%11111011($FB)
+00394  1431                       ;PASS 7: (Y=1)  %11111111 AND %11111011 = %11111011
+00395  1431                       ;$900C=%11111011($FB)
+00396  1431  88                   DEY               ;1/2    Y=Y-1
+00397  1432                       ;PASS 1:(Y=7)   Y=6
+00398  1432                       ;PASS 2:(Y=6)   Y=5
+00399  1432                       ;PASS 3:(Y=5)   Y=4
+00400  1432                       ;PASS 4:(Y=4)   Y=3
+00401  1432                       ;PASS 5:(Y=3)   Y=2
+00402  1432                       ;PASS 6:(Y=2)   Y=1
+00403  1432                       ;PASS 7:(Y=1)   Y=0
+00404  1432  D0 F6                BNE   IO          ;2/3    IF NOT Y=0 THEN BRANCH TO I0
+00405  1434                       ;       ELSE CONTINUE
+00406  1434                       ;PASS 1;(Y=6)   BRANCH TO IO
+00407  1434                       ;PASS 2;(Y=5)   BRANCH TO IO
+00408  1434                       ;PASS 3;(Y=4)   BRANCH TO IO
+00409  1434                       ;PASS 4;(Y=3)   BRANCH TO IO
+00410  1434                       ;PASS 5;(Y=2)   BRANCH TO IO
+00411  1434                       ;PASS 6;(Y=1)   BRANCH TO IO
+00412  1434                       ;PASS 7;(Y=0)   CONTINUE
+00413  1434  A9 80                LDA   #128        ;2/2    LOADS A WITH THE INITIAL FREQUENCY
+00414  1436                       ;A=$87
+00415  1436             INIT_FREQ = *-1
+00416  1436  EA                   NOP               ;1/2    BURNS 2 CYCLES
+00417  1437                       ; NO OPPERATION
+00418  1437  A4 FF                LDY   TEMP_2      ;2/3    LOADS Y WITH CHANNEL INDEX STORED
+00419  1439                       ;Y=$0C                          AT TEMP_2
+00420  1439  99 00 90   NO_SET    STA   $9000,Y     ;3/5    STORES INITIAL FREAQUENCY TO $9000+Y
+00421  143C  58                   CLI                  ;$900C=$87
+00422  143D  60                   RTS               ; EXIT ROUTINE
+00423  143E             FQ_MASK   = *
+00424  143E  FD         V_0A      BYTE  $FD     ;LOW VOICE BIT MASK %11111101
+00425  143F  FE         V_0B      BYTE  $FE     ;MID VOICE BIT MASK %11111110
+00426  1440  FB         V_0C      BYTE  $FB     ;HI VOICE BIT MASK %11111011
+00427  1441                       
+00428  1441  93 9F B0   SCREEN    BYTE "{CLEAR}{CYAN}{176}{96}{96}{96}{96}{96}{96}{178}{96}{96}{96}{96}{96}{96}{96}{96}{96}{96}{96}{96}{96}{174}"
+00429  1459  7D 05 4C             BYTE "{125}{WHITE}L{YELLOW}VOL{RED}07{CYAN}{125}VCXX TOY KEYS{125}"
+00430  1473  7D 05 3A             BYTE "{125}{WHITE}:{YELLOW}WAV{RED}11{CYAN}{171}{96}{96}{96}{96}{96}{96}{96}{96}{96}{96}{96}{96}{96}{179}"
+00431  148D  7D 05 3B             BYTE "{125}{WHITE}{59}{YELLOW}VOC{RED}06{CYAN}{125}{WHITE},{YELLOW}ATK{RED}14 {WHITE}.{YELLOW}REL{RED}56{CYAN}{125}"
+00432  14AE  AB 60 60             BYTE  "{171}{96}{96}{96}{96}{96}{96}{177}{96}{96}{96}{96}{96}{96}{96}{96}{96}{96}{96}{96}{96}{179}"
+00433  14C4  00                   BYTE  0
+00434  14C5  7D 12 05   SCREEN2   BYTE "{125}{REVERSE ON}{WHITE}{163}{REVERSE OFF}2{REVERSE ON}{163}{REVERSE OFF}3{REVERSE ON}{163}O{REVERSE OFF}5{REVERSE ON}{163}{REVERSE OFF}6{REVERSE ON}{163}{REVERSE OFF}7{REVERSE ON}{163}O{REVERSE OFF}9{REVERSE ON}{163}{REVERSE OFF}0{REVERSE ON}{163}O{REVERSE OFF}-{REVERSE ON}{163}{REVERSE OFF}{CYAN}{125}"
+00435  14EF  7D 12 05             BYTE "EVERSE ON}{WHITE}Q{125}W{125}ER{125}T{125}Y{125}UI{125}O{125}P@{125}*{REVERSE OFF}{CYAN}{125}"
+00436  1509  AB 60 60             BYTE "{171}{96}{96}{96}{96}{96}{96}{96}{96}{96}{96}{96}{96}{178}{178}{96}{96}{96}{96}{96}{96}{179}"
+00437  151F  7D 12 05             BYTE "{125}{REVERSE ON}{WHITE}{163}{REVERSE OFF}S{REVERSE ON}{163}{REVERSE OFF}D{REVERSE ON}{163}O{REVERSE OFF}G{REVERSE ON}{163}{REVERSE OFF}H{REVERSE ON}{163}{REVERSE OFF}J{REVERSE ON}{163}{REVERSE OFF}{CYAN}{125}{125}{WHITE}RETURN{CYAN}{125}"
+00438  1545  7D 12 05             BYTE "{125}{REVERSE ON}{WHITE}Z{125}X{125}CV{125}B{125}N{125}M{REVERSE OFF}{CYAN}{125}{125} {RED}EDIT {CYAN}{125}"
+00439  1561  AD 60 60             BYTE "{173}{96}{96}{96}{96}{96}{96}{96}{96}{96}{96}{96}{96}{177}{177}{96}{96}{96}{96}{96}{96}{189}{RED}"
+00440  1578  00                   BYTE  0
+00441  1579             
+00442  1579             
+00443  1579                       
+00444  1579             
+00445  1579             
+00446  1579  07         GAN       BYTE  7
+00447  157A  0B         WAV       BYTE  11
+00448  157B  06         OCT       BYTE  6
+00449  157C  0E         ATT       BYTE  14
+00450  157D  38         REL       BYTE  56
+00451  157E                       
+00452  157E  00         MASK1     BYTE  0
+00453  157F  00         MASK2     BYTE  0
+00454  1580  00         MASK3     BYTE  0
+00455  1581  00         MASK4     BYTE  0
+00456  1582                       
+00457  1582             
+00458  1582  05 05 05   Y_        BYTE  5,5,5,12,19
+00459  1587  01 02 03   X_        BYTE  1,2,3,3,3
+00460  158C  4C 3A 3B   KEY_1     BYTE  "L:{59},."
+00461  1591  CC 5B 5D   KEY_2     BYTE  "L[]<>"
+00462  1596  0F 0F 0F   MAX       BYTE  15,15,15,99,99
+00463  159B                       
+00464  159B  00 02 04   W_TABLE   BYTE  0,2,4,6,8,10,12,14,18,20,22,24,26,36,42,44
+00465  15AB                       
+00466  15AB             
+00467  15AB  00 C9 D2   TRU_INT   BYTE  000,201,210,219,225,000,235,239,000,198,207,217,223,230,234,001
+00468  15BB  00 00 93             BYTE  000,000,147,164,183,000,000,000,000,000,141,159,179,000,000,000
+00469  15CB  00 FF 99             BYTE  000,255,153,170,187,000,000,000,000,134,000,174,000,000,000,000
+00470  15DB  BF CC D4             BYTE  191,204,212,221,226,231,236,000,195,000,215,000,228,232,238,000
+00471  15EB  00                   BYTE  000
+00472  15EC             
+00473  15EC  50 4C 41   MOD_PLY   BYTE  "PLAY",0
+00474  15F1  45 44 49   MOD_EDT   BYTE  "EDIT",0
+00475  15F6  4C 4F 41   MOD_LOD   BYTE  "LOAD",0
+00476  15FB             
+00477  15FB  00         ATT_G     BYTE  0
+00478  15FC  00         REL_G     BYTE  0
+00479  15FD  00         BUFFER_A  BYTE  0
+00480  15FE  00         BUFFER_X  BYTE  0
+00481  15FF             
+
+******* 68 Label(s) *******
+att = $157C 
+att_g = $15FB 
+attack_0 = $135B 
+attack_1 = $1367 
+attack_2 = $136E 
+attack_3 = $1373 
+attack_5 = $13A6 
+attack_6 = $13B2 
+attack_7 = $13B9 
+buffer_a = $15FD 
+buffer_x = $15FE 
+devi = $12EC 
+exit_dev = $12F8 
+g_count = $12C3 
+g_d = $12B3 
+g_jump = $12A3 
+g_loop = $1256 
+g_loop_1 = $125B 
+g_u = $1289 
+gan = $1579 
+gui = $1230 
+io = $142A 
+key_1 = $158C 
+key_2 = $1591 
+loop_dev = $12F3 
+loop_dev2 = $12F9 
+mask1 = $157E 
+mask2 = $157F 
+mask3 = $1580 
+mask4 = $1581 
+max = $1596 
+mod_edt = $15F1 
+mod_lod = $15F6 
+mod_ply = $15EC 
+no_set = $1439 
+oct = $157B 
+p_val = $12D1 
+p_val_1 = $12E1 
+p_val_2 = $12E9 
+pl_start = $1304 
+play_set = $1265 
+plloop = $1309 
+rel = $157D 
+rel_g = $15FC 
+release_0 = $13BC 
+release_1 = $13C5 
+release_2 = $13CC 
+release_3 = $13E7 
+release_4 = $13EC 
+release_4_b = $13FE 
+release_5 = $1406 
+rtrn_edit = $1301 
+screen = $1441 
+screen2 = $14C5 
+start = $1200 
+tru_int = $15AB 
+v_0a = $143E 
+v_0b = $143F 
+v_0c = $1440 
+v1 = $1315 
+v2 = $131D 
+v3 = $131F 
+v4 = $1335 
+vizwav = $1412 
+w_table = $159B 
+wav = $157A 
+x_ = $1587 
+y_ = $1582 
+
+******* 10 Unused label(s) *******
+attack_1
+no_set
+p_val_2
+play_set
+release_1
+rtrn_edit
+start
+v_0a
+v_0b
+v_0c
+
+******* 56 Variable(s) *******
+afac$  = $0069
+bg$  = $000E
+bg_color$  = $900F
+ch_0  = $1424
+ch_1  = $142F
+chrout$  = $FFD2
+close$  = $FFC3
+col$  = $0013
+column$  = $9002
+devide$  = $DB12
+down$  = $0011
+fac$  = $0061
+fq_mask  = $143E
+getin$  = $FFE4
+horizontal$  = $9000
+index_1$  = $0022
+index_2$  = $0024
+init_freq  = $1435
+k_in$  = $00C5
+k_press$  = $006B
+k_rpt$  = $028A
+kb_clear$  = $00C6
+kb_size$  = $0289
+ldaf_f$  = $DC04
+lday_f$  = $D1AA
+ldf_ay$  = $D391
+ldf_y$  = $D3A2
+left$  = $009D
+load$  = $FFD5
+mask_off  = $007F
+mask_on  = $00FF
+not_point  = $00FC
+open$  = $FFC0
+osc_1$  = $900A
+osc_2$  = $900B
+osc_3$  = $900C
+osc_4$  = $900D
+plot$  = $FFF0
+pr_fac$  = $DDD7
+pr_int$  = $DDCD
+pr_str$  = $CB1E
+rdtim$  = $FFDE
+right$  = $001D
+row$  = $9003
+rw$  = $0016
+save$  = $FFD8
+scnkey$  = $FF9F
+setim$  = $FFDB
+start_address  = $A400
+temp_1  = $00FE
+temp_2  = $00FF
+tgt_vic20  = $0001
+up$  = $0091
+vert$  = $0010
+vertical$  = $9001
+vol$  = $900E
+******* 27 Unused variables(s) *******
+afac$
+close$
+col$
+column$
+devide$
+down$
+fac$
+fq_mask
+horizontal$
+index_1$
+index_2$
+k_press$
+ldaf_f$
+lday_f$
+ldf_ay$
+ldf_y$
+left$
+load$
+not_point
+open$
+pr_fac$
+right$
+save$
+scnkey$
+start_address
+tgt_vic20
+up$
+
